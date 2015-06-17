@@ -1,0 +1,1069 @@
+# -*- coding: utf-8 -*-
+#uncomment ntlk if not using DICTIONARY
+#import nltk
+import re
+
+##uncomment these 3 lines below and insert your own if not using the DICTIONARY below
+##f = open('tigrinya.txt')
+##raw = f.read()
+##tokens = nltk.word_tokenize(raw)
+
+#the vowels represented in the given dictionary
+my_vowels = ['\xc9\xa8','\xc9\x99','a','e','i','o','u','\xc9\xa8','\xc9\x91\xcc\x88','\xc9\x99','a\xcd\xa1','\xc9\x9b','\xca\x8c','\x80\x99e','I','\xc9\x90','\xc9\xaa']
+
+#the consonants represented in the given dictionary
+my_consonants = ['\xca\x94','\xc4\xa7','\xca\x83','\xca\x94','t\xcd\xa1\xca\x83',"t\xcd\xa1\xca\x83'",'\xca\x81','\xca\xb7','\xe1\xb5\x82\xe2','\xe1\xb9\x9b','t\xcd\xa1','\xcb\x80','\xca\x95','b\xcc\xa5','\xca\x82','d\xcc\xa5','\xc9\x96','\xc9\xbe','t\xcd\x9cs\xe2\x80\x99','b','c','d','f','g','h','j','k','l','m','n','p','q','r','s','t','v','w','x','y','z',"k'","t'","ts'","'","t\xca\x83","t\xca\x83'","t\xe2\x88\xab'"]
+
+#all the words in the dictionary represented as a list of strings of unicode
+#could easily be added to
+#DICTIONARY
+t_vocab = ['naw\xc9\xa8\xc4\xa7',
+ "t'awla",
+ 'm\xc9\x91\xcc\x88nt\xc9\x91\xcc\x88k',
+ 'dod',
+ 'mosob',
+ 'mot',
+ 'h\xcc\xa9am\xc9\x91\xcc\x88d',
+ '\xca\x83ebet',
+ '\xc9\x99rk\xc9\x99nn\xc9\x91\xcc\x88t',
+ 'melup',
+ 'hijap',
+ 'm\xc9\x99hab',
+ "tet\xca\x83'een\xc3\xa4",
+ "k'ajet\xca\x83ogri",
+ 'tarisahat',
+ 'mesob',
+ 'nab',
+ 'meflat',
+ 'm\xc9\xa8mat',
+ 'ma\xc4\xa7\xc3\xa6s\xc9\xa8',
+ 'g\xc9\x9bza',
+ '\xca\x83ebet',
+ 'nezi',
+ 'dal\xc9\x99r',
+ 'hIzbi',
+ 'amet',
+ 'n\xc9\x99bri',
+ "zIb'i",
+ 'segen',
+ 'gwonga',
+ 'kepti',
+ 'lami',
+ 'b\xc9\xa8\xca\x94raj',
+ 'anb\xc9\xa8sa',
+ 'banana',
+ 'siga',
+ "t\xcd\xa1\xca\x83'aba",
+ 'sugorti',
+ 'duba',
+ 'tufah',
+ 'no\xc4\xa7at',
+ '\xca\x81\xc9\xa8si',
+ 'f\xc9\x99r\xc9\xa8hi',
+ 'm\xc9\xa8f\xc9\xa8rah',
+ '\xca\x94a\xca\x94\xc9\x90n',
+ "\xca\x94a\xc4\xa7arik'",
+ 'festal',
+ '\xca\x94\xc9\x90ll',
+ 'm\xc9\xa8f\xc9\xa8la\xc4\xa7',
+ '\xca\x94af\xc9\xa8li\xc4\xa7',
+ 'mitesbar',
+ 'misbar',
+ '\xca\x94andad',
+ 'murad',
+ 'k\xca\xb7\xc9\x91x',
+ 'kuda',
+ "\xca\x94awd\xc9\xa8k'",
+ "m\xc9\xa8nkats'",
+ "m\xc9\xa8\xca\x94ankats'",
+ 'nennehedhed',
+ '\xca\x94abla\xca\x94',
+ '\xca\x94af\xc9\xa8r\xc9\xa8h',
+ 'mitisa\xca\x94',
+ 'hafm\xc9\xa8bal',
+ 'hafile',
+ 'nela\xca\x94alimuhad',
+ 'netahatimuhad',
+ '\xca\x94abzi',
+ 'm\xc9\xa8heba\xca\x94',
+ '\xca\x94af\xc9\xa8lat',
+ 'm\xc9\xa8lilaj',
+ 'm\xc9\xa8\xca\x94utal',
+ "k'alayi",
+ 'me\xca\x83ak\xe2\x80\x99',
+ 'gobogerato',
+ 'gobom\xc9\xa8hwan',
+ 'm\xc9\xa8t\xc4\xa7ad',
+ '\xca\x94at\xc4\xa7at',
+ 'm\xc9\xa8texfat',
+ 'laha',
+ 'bijat\xc9\xa8tat',
+ 'm\xc9\xa8l\xca\x94al',
+ '\xca\x94al\xca\x94al',
+ 'kebabi',
+ 'zoba',
+ 'skawt',
+ 'memzan',
+ 'm\xc9\xa8r\xca\x94aj',
+ "\xca\x94ad\xc9\xa8k'as",
+ '\xca\x94awbele',
+ 't\xc9\x99xm\xc9\xa8bal',
+ 't\xc9\x99xilu',
+ 't\xc9\x99xbele',
+ 'n\xc9\xa8ssat\xc9\x90n',
+ 'n\xc9\xa8ssatom',
+ 'n\xc9\xa8ss\xc9\xa8xi',
+ 'n\xc9\xa8ss\xc9\xa8xa',
+ 'n\xc9\xa8ss\xc9\xa8xatk\xc9\xa8n',
+ 'n\xc9\xa8ss\xc9\xa8xatkum',
+ 'n\xc9\xa8ssa',
+ 'm\xc9\xa8s\xc9\xa8\xca\x94sa\xca\x94',
+ 'nawa\xc4\xa7',
+ 'ma\xca\x94at',
+ 'a\xcd\xa1ij\xc9\x9br',
+ 'kob\xca\x8crta',
+ 'd\xc9\x9bm',
+ "m\xc9\x9b\xca\x94\xc9\x9bts'a\xcd\xa1u",
+ "k'\xc9\xa8dan",
+ "m\xc9\x9bmts'a",
+ 'sofa',
+ 'kubaija',
+ 'm\xc9\xa8\xca\x94\xc9\xa8rba\xca\x83',
+ 'raba\xca\x83i',
+ 'n\xc9\x9bfsuwak\xc9\x9bf',
+ 'mudaq',
+ '\xc4\xa7a\xcd\xa1uwi',
+ '\xca\x94ak\xc9\x99\xc4\xa7a',
+ 'b\xc9\xa8k\xc9\x9bri',
+ '\xca\x94agru',
+ 'gazeta',
+ 's\xc9\xa8\xca\x94\xc9\xa8li',
+ 'ha\xcd\xa1imanut',
+ 'ruz',
+ '\xc9\xa8mni',
+ "m\xc9\xa8nts'af",
+ 'k\xc9\x99\xca\x83\xca\x83a',
+ 's\xc9\x9bma\xcd\xa1i',
+ 't\xc9\x9bm\xc9\x9bn',
+ 'm\xc9\x9br\xc9\xa8r',
+ "m\xc9\xa8bts'a\xc4\xa7",
+ 'kuni',
+ '\xc9\xa8tata\xcd\xa1ij\xc9\x9br',
+ 'n\xc9\xa8fas',
+ "\xca\x94\xc9\x9bnt\xca\x83'e\xcd\xa1iti",
+ 'ma\xcd\xa1i',
+ 'k\xc9\x9blbi',
+ 'ga\xca\x83\xca\x83a',
+ 'k\xe1\xb5\x82\xe2\x80\x99\xc9\x94s\xe2\x80\x99li',
+ "k\xe1\xb5\x82\xe2\x80\x99e's\xc9\xa8li",
+ 'g\xca\xb7al\xca\x94',
+ 'za\xc4\xa7\xca\x8cl',
+ "k'ori",
+ 'war\xca\x94i',
+ 'war\xca\x94oi',
+ 'b\xc9\x9br\xc9\x9bd',
+ 'muwot',
+ "moik'u",
+ 'm\xc9\x9bmb\xc9\x99r',
+ "ts'\xc9\x99ha\xcd\xa1i",
+ 'b\xc9\x99\xca\x94li',
+ 'm\xc9\x9bnkas',
+ 'as\xc9\xa8rte\xca\x83amunte',
+ 'as\xc9\xa8rtemaj\xc9\xa8',
+ 'as\xc9\xa8rtehamu\xca\x83te',
+ 'as\xc9\xa8rtearbate',
+ 'mIsma',
+ 'wI\xca\x95ud',
+ 'bIzu\xc4\xa7',
+ 'as\xc9\xa8rtet\xca\x83ate',
+ "t'Ibolti",
+ "k'aji",
+ 'aserte\xca\x83ahete',
+ 'as\xc9\xa8rte\xca\x83\xc9\xa8du\xca\x83te',
+ 'as\xc9\xa8rtes\xc9\xa8liste',
+ 'as\xc9\xa8rtek\xc9\xa8lite',
+ 'kIfu',
+ 'm\xc9\x9bn',
+ 'b\xc9\xa8t\xca\x83a',
+ "t\xcd\xa1\xca\x83 '\xc9\xa8ru",
+ 'meraj',
+ "m\xc9\xa8bla'",
+ 'kimz\xc9\xa8b\xc9\x9blo',
+ 'absIg\xe1\xb9\x9b',
+ 'de\xc4\xa7ri',
+ 'kidmi',
+ 'abgoni',
+ 'abmo\xc5\x8bo',
+ 'bIze\xca\x94ika',
+ 'b\xc9\x9bm\xc9\xa8\xca\x81niat',
+ 'b\xc9\x9bd\xc9\x99\xc4\xa7\xc9\x9bri',
+ "t\xcd\xa1s'\xc9\x9blim",
+ 'g\xc9\x9bmbi',
+ 'm\xc9\x9brida',
+ 'm\xc9\xaaz\xc9\xaarab',
+ 'm\xc9\xaastaj',
+ '\xca\x94\xc9\x9bt\xc9\x9blia',
+ 'l\xc9\xa8bi',
+ 'b\xc9\xa8\xca\x95\xc9\xa8dmi',
+ 'dege',
+ 'g\xc9\x9bbidza',
+ 'm\xc9\x9bt\xc9\xa8ras',
+ 'g\xca\xb7aln\xc9\xa8gus',
+ "t\xca\x83'ama",
+ 'hatt\xc9\x9bf\xc9\x9b',
+ 'mIsgana na',
+ 'jIhun',
+ 'mIffItan',
+ 'kisa\xca\x94',
+ 'h\xc9\x9brig',
+ 'mixad',
+ "t'onk\xca\xb7alit",
+ 'bIze',
+ 'id',
+ 'k\xc9\x9bbdi',
+ 'd\xc9\xa8rro',
+ 'm\xc9\xa8ndad',
+ "m\xc9\xa8d\xc9\xa8k'as",
+ '\xca\x94esra',
+ 'mugjaj',
+ 'n\xc9\xa8\xc4\xa7\xc9\xa8na',
+ 'ba\xca\x94alb\xc3\xa4t',
+ "t\xc9\x9bx'\xc9\x90balnet",
+ 'korna',
+ '\xc9\xa8ns\xc9\xa8sa',
+ "t\xc9\xa8t\xcd\xa1s'bit",
+ "hank'auta",
+ "z\xc9\x9b tema'arai'arai",
+ "t\xcd\xa1s'd\xc9\x90mar\xc9\x9bt",
+ 's\xc9\x9bt\xc9\x9bz\xc9\xa8be',
+ 'h\xc9\xa8du',
+ 'ja\xc4\xa7ilie',
+ "k'\xc9\xa8bip",
+ "sa'at",
+ "t\xc9\x90rmus naisa'at",
+ 'id',
+ '\xc4\xa7\xc9\x90brawi',
+ 'r\xc9\xa8s\xc9\x9btaman\xc9\x90n\xc9\x9bt',
+ "\xc9\x9bnt\xcd\xa1\xca\x83'ararit",
+ "t\xcd\xa1\xca\x83ink'\xc9\x9bt",
+ 'mitlax',
+ 'h\xc9\x9bfr\xc9\x9bt',
+ 's\xc9\xa8mexit',
+ "s\xc9\xa8me'itawi",
+ 's\xc9\xa8mexit zebelu',
+ 'frhi',
+ 'k\xc9\x9bntit',
+ 'k\xc9\x9bntat',
+ 'anst\xc9\x9bti',
+ 'dildul',
+ 'derux',
+ "teas'asa'fi",
+ 't\xc9\x9bs\xc9\x90bari',
+ 'sagri',
+ 'sogar',
+ 'hasas',
+ 'm\xc9\x90rir gwahi',
+ "mik'al",
+ 'hamama',
+ "k'\xc9\x90na",
+ "k'\xc9\x90ni",
+ 'gazif',
+ 'f\xca\x81ri',
+ "wadi taba'atai",
+ 'jahalil jahawen',
+ "t\xcd\xa1\xca\x83'ka",
+ "t\xcd\xa1\xca\x83'kau",
+ 'zehari',
+ "ngwa'ahokurt\xcd\xa1si",
+ "ant\xcd\xa1s'abri",
+ 'harfaf',
+ 'goma',
+ "b'julbamehat",
+ 'kurfif',
+ 'kurfaf',
+ 'kurt\xcd\xa1si',
+ 'kurt\xcd\xa1sizebelu',
+ 'dengat\xcd\xa1se',
+ 'aleni',
+ 'mut\xcd\xa1\xca\x83lax',
+ '\xca\x83\xc9\xa8tahtaho',
+ 'lumut\xcd\xa1s',
+ 'hasen',
+ "mit\xcd\xa1\xca\x83'ibraho",
+ 'ruborkorna',
+ 'm\xc9\xa8s\xc9\xa8nbad',
+ 'm\xc9\xa8d\xc9\xa8na',
+ 'zahab\xc9\x90te',
+ "zi tema'arai'arai",
+ 'maimao',
+ 'sulus korna',
+ '\xc9\x9bmn\xc9\x9bt',
+ "satetawe'ei",
+ 'maid\xcd\xa1\xca\x92ad\xcd\xa1\xca\x92a',
+ "m\xc9\x9bnt\xcd\xa1\xca\x83'at\xcd\xa1\xca\x83'ata",
+ 'milu',
+ 'suf',
+ "nai'idsa'at",
+ "m\xc9\x9bs\xc9\xa8risa'at",
+ "k'\xc9\xa8d\xc9\x9brai",
+ '\xca\x94abbaj',
+ 'wahazimai',
+ "\xc4\xa7\xc9\xa8mak'",
+ 'akopmai',
+ 'h\xc9\xa8gus',
+ 'm\xc9\xa8h\xc9\xa8mbas',
+ 'd\xc9\xa8mu',
+ "n\xc9\xa8'\xca\x83te",
+ 'bahari',
+ "k'alai",
+ 'mef\xc9\x99ta',
+ 'm\xc9\x9bzgut',
+ 'ab\xca\x95ur',
+ 'g\xca\xb7ahi',
+ '\xc4\xa7\xc9\x99bri',
+ 'fabrika',
+ 'k\xe2\x80\x99arni',
+ '\xca\x94ag\xe1\xb5\x82\xe1\xb4\x90s\xc9\xa8liti',
+ 'kofmab\xc9\x9clj',
+ 'k\xca\xb7ana',
+ 'tuta',
+ 'kongo',
+ 'kulu\xca\x83a',
+ 'd\xc9\xa8\xce\xb2\xc9\xa8na',
+ 'm\xc9\x91\xcc\x88kina',
+ 'yessab\xc9\x9br',
+ 'g\xca\xb7\xc9\x91l',
+ '\xca\x94\xc9\x91wale\xc9\x96',
+ '\xca\x83omunt\xc9\x9b',
+ '\xca\x83amnaj\xca\x83amunaj ',
+ 'w\xc9\x99\xc4\xa7u\xc9\x97\xcc\xa5',
+ 'w\xc9\x99\xc4\xa7u\xc9\x97at',
+ '\xc4\xa7am\xca\x83aj',
+ "k'adamaj",
+ '\xcb\x80\xca\x95asa',
+ '\xc4\xa7amu\xca\x83t\xc9\x9b',
+ '\xca\x95arba\xca\x95t\xc9\x9b',
+ 'rab\xcb\x80\xca\x95aj',
+ 'k\xc9\xaafli',
+ '\xcb\x80\xca\x95\xc9\xaataro',
+ 'bejt',
+ 'mi\xca\x94itawit',
+ 'meb\xcc\xa5\xc9\x9blmi\xca\x95iti',
+ "t'\xc9\x9bmje",
+ 'n\xc9\xaagu\xca\x82',
+ 'n\xc9\x9bgaw\xc9\x9b\xca\x82',
+ 't\xc9\x9bmhe\xc9\xbeti',
+ 's\xc9\x9bb\xca\x94ai',
+ 'bizu\xc4\xa7',
+ 'azju',
+ 't\xc9\xaa\xca\x83\xc9\x9b\xca\x95at\xc9\x9b',
+ 't\xc9\x9bs\xca\x94ant\xc9\xaa\xca\x83\xca\x95at\xc9\x9bn',
+ 'meb\xcc\xa5\xc9\x9blt\xc9\x9bs\xca\x94ant\xc9\xaa\xca\x83\xca\x95at\xc9\x9bn',
+ 'ta\xca\x83\xca\x95ai',
+ '\xc4\xa7ad\xc9\x9b',
+ 'mi\xca\x94iti',
+ "t'\xc9\xaamri",
+ 't\xe2\x80\x99\xc9\xaamrigrad\xcc\xa5',
+ 'seb',
+ 'grad\xcc\xa5',
+ 'grawti',
+ 'n\xc9\x9bg\xc9\xaasti',
+ 'maj\xc4\xa7arimu',
+ 'bejtt\xc9\x9bmhe\xc9\xbeti',
+ 'kalaj',
+ '\xca\x83aw\xca\x95at\xc9\x9b',
+ '\xca\x83ab\xca\x95aj',
+ '\xca\x83udu\xca\x83t\xc9\x9b',
+ '\xca\x83ad\xca\x83aj',
+ "k'untaro",
+ 'w\xc9\x9b\xc9\x96i',
+ '\xca\x94\xc9\x91w\xc9\x9b\xc9\x96at',
+ 't\xc9\x9bmh\xc9\x91\xc9\xbeei',
+ 's\xc9\x9bra\xc4\xa7',
+ 'm\xc9\x9bmher',
+ '\xca\x94\xc9\x99s\xc9\x9brt\xc9\x9b',
+ '\xca\x94\xc9\x9bs\xc9\x9bre mi\xca\x94itawit',
+ '\xca\x94asraij',
+ 'salsaj',
+ 's\xc9\x9bl\xc9\x9bst\xc9\x9b',
+ 'm\xca\x94it\xcd\x9cs\xe2\x80\x99au',
+ 'lomimi\xca\x83\xc9\x9bt',
+ 'azjuwu\xc4\xa7u\xc9\x97',
+ 'azjubuzu\xc4\xa7',
+ 'azjombuzu\xc4\xa7at',
+ 'k\xc9\xaal\xc9\xaate',
+ 's\xc9\x9bbejti',
+ "be\xc4\xa7\xc9\x9brk'an",
+ 'b\xc9\xa8gm\xc9\xa8t',
+ 'b\xc9\xa8n\xc9\xa8tzur',
+ 'bemedep',
+ 'm\xc9\xa8z\xc9\xa8rga',
+ 'ab',
+ "b\xc9\xa8f\xc9\xa8ts'\xc9\xa8zom",
+ 'halal',
+ 'h\xc9\x9bd\xca\x92i',
+ 'naj',
+ 'ableli',
+ 'b\xc9\xa8g\xc9\xa8m\xc9\xa8t',
+ 'jimesil',
+ "k'\xc9\x9bszebele",
+ "\xca\x94apk'arabagize",
+ 'negere',
+ '\xc9\x99ti',
+ 'ga\xca\x94lep',
+ 'lomimalti',
+ 'entaj',
+ 'ma\xca\x94as',
+ 'm\xc9\x9bn',
+ 'nementaj',
+ 'k\xc9\xa8saph\xc9\x9bd\xca\x92i',
+ 'habe',
+ 'gega',
+ 'mu\xc4\xa7an',
+ "ts'eba",
+ 'kaburo',
+ 'mehaza',
+ 'yorukhe',
+ 'gitar',
+ 'aj',
+ 'mets\xc9\x99wat',
+ 'mets\xc9\x99wat',
+ 'arkeha',
+ 'm\xc9\xa8st',
+ 't\xc9\xa8mali',
+ 'w\xc9\xa8ddi',
+ 'muzika',
+ 'm\xc9\xaaz\xc9\xaamar',
+ 'medraf',
+ 'm\xc9\xaazmur',
+ 'arku',
+ 'sinkite',
+ "k'ijesur",
+ 'bani',
+ 'ingera',
+ 'zeharerre',
+ 'kisere',
+ 'zebesele',
+ 'zite serhe',
+ 'jimetur',
+ "adq'iqajimetur",
+ "ingw'aho",
+ 'fruta',
+ "sugortiz'ada",
+ 'fagoli',
+ 'bursin',
+ 'siga',
+ 'dinis',
+ 'jedalu',
+ 'zaibesele',
+ 'zeteserhe',
+ 'merrir',
+ 'zetebalasewai',
+ 'zigni',
+ 'sebhe',
+ 'sukorrawi',
+ 'ahamilti',
+ "k'otslemets'li",
+ 'zukini',
+ 'durho',
+ 'hamliadri',
+ 'komidere',
+ 'zebhiabun',
+ 'n\xc9\xa8ssu',
+ 'asa',
+ 'h\xc9\xaamba\xca\x83a',
+ 'm\xc9\xa8gbi',
+ 'ha\xca\x83\xc9\xa8ma',
+ 'waika',
+ 'b\xc9\xa8surat',
+ 'ma\xca\x94alti',
+ '\xca\x94arbi',
+ 'selaam',
+ "furk'ima\xca\x94alti",
+ "furk'ilaati",
+ 'sonni',
+ "naik'\xc9\xa8bIt'utot\xe2\x88\xab\xc9\xa8m",
+ 'wanani',
+ '\xca\x94ahazab',
+ "k'adam",
+ '\xca\x94asdamimuwa',
+ 'f\xc3\xa4ha\xe2\x88\xabu',
+ 'mehezad',
+ 'hamus',
+ 's\xc9\x99lus',
+ 'koria',
+ 'rubihi',
+ 'dob',
+ 'sa\xca\x94aat',
+ "t'\xc9\x99miet",
+ 'ut\xca\x83ak',
+ 'rob\xc9\x99rt',
+ 't\xc9\xa8r\xc9\xa8bi\xca\x83a',
+ "has'\xc9\xaar",
+ "\xc4\xa7arak'",
+ 'k\xc9\x99\xca\x94rso\xca\x94egri',
+ 'k\xc9\x99\xca\x94rsoseki\xca\x94et',
+ 'mezhalikondi\xca\x83onr',
+ 'kulan',
+ 'amerika',
+ 'ko\xca\x94i\xca\x83o',
+ 'ha\xc5\x8bgw\xc9\x90l',
+ '\xca\x94autobus',
+ 'kamira',
+ 'kanada',
+ 'xaramela\xca\x83ukorawi',
+ 'm\xc9\xaas\xc9\x99kkam',
+ 'selfon',
+ 'naj\xca\x94it telefon',
+ 'mesa\xc5\x8bgele',
+ 'l\xc9\xaadet',
+ '\xca\x83igara',
+ 'beridu',
+ 'kumpiiter',
+ 'daunlod',
+ 'mistaj',
+ 'm\xc9\xaazuwar',
+ 'mez\xc9\x99werf\xc9\x99\xca\x94ad',
+ 'fasika',
+ '\xca\x94afasiga',
+ 'mu\xca\x94ulap',
+ 'kulep',
+ 'amerikafutbal',
+ 'mehegas',
+ 'k\xe2\x80\x99udusyohan\xc9\xaas',
+ 'had\xc9\xaa\xca\x83\xca\x94am\xc9\xaat',
+ 'mesk\xe2\x80\x99el',
+ 'me\xca\x94erafi\xca\x94agaj\xca\x83',
+ 'd\xca\x92elate',
+ 'ts\xe2\x80\x99umo\xca\x94',
+ 'mesam',
+ 'hegawif\xc9\x99\xca\x94ad',
+ 'debtabe',
+ 'l\xc9\xaat\xca\x83ensa',
+ 'f\xc9\x99\xca\x94ad',
+ 'sanbu',
+ 'meksiko',
+ 'mogozan',
+ 'tuktuug',
+ 'motorbajk',
+ 'motto',
+ 't\xe2\x80\x99et\xe2\x80\x99owmebal',
+ 'telefon',
+ '\xca\x94ajroplan',
+ 'k\xe2\x80\x99\xc9\x99nf\xc9\x99z',
+ 'profeseri',
+ 'mukamat\xe2\x80\x99',
+ 'zenab',
+ 'maj',
+ 'najg\xc9\x99dden',
+ 'm\xc9\xaabal',
+ 'deyten\xc9\x99g\xc9\x90r',
+ 'm\xc9\xaalax',
+ 'menkwop',
+ 'mefe\xca\x83a',
+ 'm\xc9\xaagiyats',
+ 'metkax',
+ 'softwer',
+ 'sp\xe2\x80\x99anya',
+ 's\xc3\xa4nb\xc3\xa4t',
+ 'tibi',
+ 'teleb\xc9\xaad\xca\x92\xc9\xaan',
+ 'tekst',
+ 'mel\xc9\x99xtisededilaj',
+ 'teatr',
+ 'tumba\xc4\xa7o',
+ 'babur',
+ 'bagmen',
+ 'mege\xca\x83a',
+ '\xca\x94erefti',
+ 'd\xc9\x99\xc5\x8bg\xc9\x99l',
+ 'm\xc9\xaadlaj',
+ 'ma\xcd\xa1i',
+ '\xca\x94abej',
+ 'me\xca\x83o\xca\x83a',
+ 'mut\xca\x83lat\xca\x83',
+ '\xca\x94efun',
+ 'borsa',
+ 'd\xca\x92embil',
+ 'm\xc9\x99xfat',
+ 'ma\xca\x94ts\xe2\x80\x99o',
+ 'mets\xe2\x80\x99haf',
+ 'mekina',
+ 'mahare',
+ 'm\xc9\xaanbab',
+ '\xca\x94abl\xc9\x90\xca\x94\xc9\x90li',
+ 'm\xc9\xa8\xc4\xa7\xc9\xa8ra',
+ '\xca\x83\xc9\xa8gg\xc9\xa8r',
+ 't\xc9\xa8\xca\x83\xc9\xa8gir\xc9\xa8',
+ 'kulun\xc9\x90g\xc9\x90r',
+ 'kapti',
+ 'm\xc9\x99hwan',
+ "t'\xc9\x99x'a",
+ '\xca\x94asra\xc4\xa7i',
+ "m\xc9\xa8k'\xc9\xa8ras'",
+ "k'aras'aj",
+ "m\xc9\xa8k'\xc9\xa8ras'",
+ 'k\xca\xb7\xc9\x94l\xc9\xa8l\xc9\xa8',
+ "t\xcd\xa1s'\xc9\xa8r\xc9\xa8j",
+ "m\xc9\xa8t\xcd\xa1s'\xc9\xa8raj",
+ "at\xcd\xa1s'\xc9\xa8raj",
+ 'm\xc9\xa8gbim\xc9\xa8sra\xc4\xa7',
+ 'k\xc9\xa8\xca\x83ani',
+ "sa'sa'aj",
+ 'k\xc9\x90bit',
+ "mo\xca\x94s'ar",
+ 'sera\xc4\xa7t\xc9\xa8nja',
+ 'm\xc9\xa8h\xc9\xa8b\xc9\x91\xcc\x88j',
+ 'g\xca\xb7olg\xca\xb7ol',
+ 'mox\xca\xb7\xc9\xa8lal',
+ 'kebit',
+ 'la\xca\x94li',
+ 'm\xc9\xa8sra\xc4\xa7',
+ 'fer\xc9\xa8s',
+ 'nabti',
+ 's\xc9\xa8rah\xc9\xa8',
+ 'krar',
+ "ts'igam",
+ 'k\xc9\xa8pti',
+ 'fokis',
+ 'wa\xca\x94aro',
+ 'ta\xc4\xa7ti',
+ 'm\xc9\xa8sra\xc4\xa7',
+ 'm\xc9\xa8gbi',
+ 'w\xc9\xa8rhi',
+ 'muzik\xc9\xa8nja',
+ 'w\xc9\xa8l\xc9\xa8hade',
+ "b\xc9\xa8tile'eli",
+ 'm\xc9\x90\xc4\xa7ras',
+ '\xc4\xa7ar\xc9\xa8staj',
+ 'm\xc9\x90\xc4\xa7ras',
+ "k'eltof",
+ "be'ltof",
+ '\xca\x94iy\xc9\xa8man',
+ 'k\xc9\xa8pti',
+ 'gojajaj',
+ 'm\xc9\xa8k\xca\xb7aj',
+ "mihs'ari",
+ 'zammaraj',
+ 'bel\xc9\xa8\xc4\xa7e',
+ 'ma\xca\x94bel',
+ 'hambasaj',
+ 'hasap',
+ 'nap',
+ "la'\xc9\x90li",
+ "m\xc9\xa8nt\xcd\xa1s'art\xcd\xa1s'ar",
+ "za'a\xce\xb2\xc9\xa8",
+ "'a\xce\xb2\xc9\xa8",
+ 'wata',
+ "m\xc9\xa8s'\xc9\xa8baj",
+ 'm\xc9\xa8mzan',
+ 'k\xc9\xa8bdet',
+ "t\xcd\xa1\xca\x83'inket",
+ "m\xc9\xa8t\xcd\xa1s'\xc9\xa8na",
+ "sa'sit",
+ 'sa\xca\x95s\xc9\xa8\xca\x95it',
+ "wat'a\xca\x94i",
+ "halak'",
+ 'abt\xc9\xa8hti',
+ 'apkababi',
+ 'haki',
+ 'tagala',
+ 'ziwulu',
+ 'ts\xc9\x99bu',
+ 'mi\xca\x83alitsao',
+ 'tabah',
+ 'ni\xca\x83ide\xc9\xaa',
+ 'b\xc9\x99tanigawa',
+ "l\xc9\x99guts'i",
+ 'l\xc9\x99g\xc9\x99zania',
+ 'haili',
+ 'hailiya',
+ 'b\xc9\x99haili',
+ 'b\xc9\x99haba',
+ 'g\xc9\x99l\xc9\x99zi',
+ 'g\xc9\x99l\xc9\x99z\xc9\x99nat',
+ 'belihe',
+ 'm\xc9\x99zahatu',
+ "tafwt'\xc9\x99\xca\x94la",
+ '\xca\x92uvi',
+ 'ad\xc9\x99l\xc9\x99',
+ 'nisatagomola',
+ 'ga\xca\x94lep',
+ '\xca\x94ane',
+ 'sa\xca\x94ari']
+
+
+                   
+def tigrinya_root(word):
+    """takes a given word and takes out the vowels, returning the root consonants in order"""
+    i = 0
+    consonants = ""
+    while i < len(word):
+        if word[i] in my_vowels:
+            i += 1
+        elif(i+5) < len(word):
+            if word[i] not in my_vowels and word[i+1] not in my_vowels and word[i+2] not in my_vowels and word[i+3] not in my_vowels and word[i+4] not in my_vowels and word[i+5] not in my_vowels:
+                cons_cluster1 = word[i]+word[i+1]+word[i+2]+word[i+3]+word[i+4]+word[i+5]
+                cons_cluster = word[i]+word[i+1]+word[i+2]+word[i+3]+word[i+4]
+                cons_cluster2 = word[i]+word[i+1]+word[i+2]+word[i+3]
+                cons_cluster3 = word[i]+word[i+1]+word[i+2]
+                cons_cluster4 = word[i]+word[i+1]
+                if cons_cluster1 in my_consonants:
+                    consonants += cons_cluster1 + '-'
+                    i+=6
+                elif cons_cluster in my_consonants:
+                    consonants += cons_cluster + '-'
+                    i+=5
+                elif cons_cluster in my_consonants:
+                    consonants += cons_cluster2 + '-'
+                    i+=4
+                elif cons_cluster2 in my_consonants:
+                    consonants += cons_cluster3 + '-'
+                    i += 3
+                elif cons_cluster3 in my_consonants:
+                    consonants += cons_cluster4 + '-'
+                    i += 2
+                elif word[i] in my_consonants:
+                    consonants += word[i] + '-'
+                    i += 1
+                else:
+                    i += 1
+            elif word[i] not in my_vowels and word[i+1] not in my_vowels and word[i+2] not in my_vowels and word[i+3] not in my_vowels and word[i+4] not in my_vowels:
+                cons_cluster = word[i]+word[i+1]+word[i+2]+word[i+3]+word[i+4]
+                cons_cluster2 = word[i]+word[i+1]+word[i+2]+word[i+3]
+                cons_cluster3 = word[i]+word[i+1]+word[i+2]
+                cons_cluster4 = word[i]+word[i+1]
+                if cons_cluster in my_consonants:
+                    consonants += cons_cluster + '-'
+                    i+=5
+                elif cons_cluster in my_consonants:
+                    consonants += cons_cluster2 + '-'
+                    i+=4
+                elif cons_cluster2 in my_consonants:
+                    consonants += cons_cluster3 + '-'
+                    i += 3
+                elif cons_cluster3 in my_consonants:
+                    consonants += cons_cluster4 + '-'
+                    i += 2
+                elif word[i] in my_consonants:
+                    consonants += word[i] + '-'
+                    i += 1
+                else:
+                    i += 1
+            elif word[i] not in my_vowels and word[i+1] not in my_vowels and word[i+2] not in my_vowels and word[i+3] not in my_vowels:
+                cons_cluster = word[i]+word[i+1]+word[i+2]+word[i+3]
+                cons_cluster2 = word[i]+word[i+1]+word[i+2]
+                cons_cluster3 = word[i]+word[i+1]
+                if cons_cluster in my_consonants:
+                    consonants += cons_cluster + '-'
+                    i+=4
+                elif cons_cluster2 in my_consonants:
+                    consonants += cons_cluster2 + '-'
+                    i += 3
+                elif cons_cluster3 in my_consonants:
+                    consonants += cons_cluster3 + '-'
+                    i += 2
+                elif word[i] in my_consonants:
+                    consonants += word[i] + '-'
+                    i += 1
+                else:
+                    i += 1
+            elif word[i] not in my_vowels and word[i+1] not in my_vowels and word[i+2] not in my_vowels:
+                cons_cluster = word[i]+word[i+1]+word[i+2]
+                cons_cluster2 = word[i]+word[i+1]
+                if cons_cluster in my_consonants:
+                    consonants += cons_cluster + '-'
+                    i += 3
+                elif cons_cluster2 in my_consonants:
+                    consonants += cons_cluster2 + '-'
+                    i += 2
+                elif cons_cluster2 in my_vowels:
+                    i += 2
+                elif word[i] in my_consonants:
+                    consonants += word[i] + '-'
+                    i += 1
+                else:
+                    i += 1
+            elif word[i] not in my_vowels and word[i+1] not in my_vowels:
+                cons_cluster = word[i]+word[i+1]
+                if cons_cluster in my_consonants:
+                    consonants += cons_cluster + '-'
+                    i += 2
+                elif cons_cluster in my_vowels:
+                    i +=2
+                elif word[i] in my_consonants:
+                    consonants += word[i] + '-'
+                    i += 1
+                else:
+                    i += 1
+            elif word[i] not in my_vowels:
+                if word[i] in my_consonants:
+                    consonants += word[i] + '-'
+                    i += 1
+                else:
+                    i += 1
+        elif(i+4) < len(word):
+            if word[i] not in my_vowels and word[i+1] not in my_vowels and word[i+2] not in my_vowels and word[i+3] not in my_vowels and word[i+4] not in my_vowels:
+                cons_cluster = word[i]+word[i+1]+word[i+2]+word[i+3]+word[i+4]
+                cons_cluster2 = word[i]+word[i+1]+word[i+2]+word[i+3]
+                cons_cluster3 = word[i]+word[i+1]+word[i+2]
+                cons_cluster4 = word[i]+word[i+1]
+                if cons_cluster in my_consonants:
+                    consonants += cons_cluster + '-'
+                    i+=5
+                elif cons_cluster in my_consonants:
+                    consonants += cons_cluster2 + '-'
+                    i+=4
+                elif cons_cluster2 in my_consonants:
+                    consonants += cons_cluster3 + '-'
+                    i += 3
+                elif cons_cluster3 in my_consonants:
+                    consonants += cons_cluster4 + '-'
+                    i += 2
+                elif word[i] in my_consonants:
+                    consonants += word[i] + '-'
+                    i += 1
+                else:
+                    i += 1
+            elif word[i] not in my_vowels and word[i+1] not in my_vowels and word[i+2] not in my_vowels and word[i+3] not in my_vowels:
+                cons_cluster = word[i]+word[i+1]+word[i+2]+word[i+3]
+                cons_cluster2 = word[i]+word[i+1]+word[i+2]
+                cons_cluster3 = word[i]+word[i+1]
+                if cons_cluster in my_consonants:
+                    consonants += cons_cluster + '-'
+                    i+=4
+                elif cons_cluster2 in my_consonants:
+                    consonants += cons_cluster2 + '-'
+                    i += 3
+                elif cons_cluster3 in my_consonants:
+                    consonants += cons_cluster3 + '-'
+                    i += 2
+                elif word[i] in my_consonants:
+                    consonants += word[i] + '-'
+                    i += 1
+                else:
+                    i += 1
+            elif word[i] not in my_vowels and word[i+1] not in my_vowels and word[i+2] not in my_vowels:
+                cons_cluster = word[i]+word[i+1]+word[i+2]
+                cons_cluster2 = word[i]+word[i+1]
+                if cons_cluster in my_consonants:
+                    consonants += cons_cluster + '-'
+                    i += 3
+                elif cons_cluster2 in my_consonants:
+                    consonants += cons_cluster2 + '-'
+                    i += 2
+                elif cons_cluster2 in my_vowels:
+                    i += 2
+                elif word[i] in my_consonants:
+                    consonants += word[i] + '-'
+                    i += 1
+                else:
+                    i += 1
+            elif word[i] not in my_vowels and word[i+1] not in my_vowels:
+                cons_cluster = word[i]+word[i+1]
+                if cons_cluster in my_consonants:
+                    consonants += cons_cluster + '-'
+                    i += 2
+                elif cons_cluster in my_vowels:
+                    i +=2
+                elif word[i] in my_consonants:
+                    consonants += word[i] + '-'
+                    i += 1
+                else:
+                    i += 1
+            elif word[i] not in my_vowels:
+                if word[i] in my_consonants:
+                    consonants += word[i] + '-'
+                    i += 1
+                else:
+                    i += 1
+        #looks ahead 3 to make sure index is not out of range.
+        elif(i+3) < len(word):
+            if word[i] not in my_vowels and word[i+1] not in my_vowels and word[i+2] not in my_vowels and word[i+3] not in my_vowels:
+                cons_cluster = word[i]+word[i+1]+word[i+2]+word[i+3]
+                cons_cluster2 = word[i]+word[i+1]+word[i+2]
+                cons_cluster3 = word[i]+word[i+1]
+                if cons_cluster in my_consonants:
+                    consonants += cons_cluster + '-'
+                    i+=4
+                elif cons_cluster2 in my_consonants:
+                    consonants += cons_cluster2 + '-'
+                    i += 3
+                elif cons_cluster3 in my_consonants:
+                    consonants += cons_cluster3 + '-'
+                    i += 2
+                elif word[i] in my_consonants:
+                    consonants += word[i] + '-'
+                    i += 1
+                else:
+                    i += 1
+            elif word[i] not in my_vowels and word[i+1] not in my_vowels and word[i+2] not in my_vowels:
+                cons_cluster = word[i]+word[i+1]+word[i+2]
+                cons_cluster2 = word[i]+word[i+1]
+                if cons_cluster in my_consonants:
+                    consonants += cons_cluster + '-'
+                    i += 3
+                elif cons_cluster2 in my_consonants:
+                    consonants += cons_cluster2 + '-'
+                    i += 2
+                elif cons_cluster2 in my_vowels:
+                    i += 2
+                elif word[i] in my_consonants:
+                    consonants += word[i] + '-'
+                    i += 1
+                else:
+                    i += 1
+            elif word[i] not in my_vowels and word[i+1] not in my_vowels:
+                cons_cluster = word[i]+word[i+1]
+                if cons_cluster in my_consonants:
+                    consonants += cons_cluster + '-'
+                    i += 2
+                elif cons_cluster in my_vowels:
+                    i +=2
+                elif word[i] in my_consonants:
+                    consonants += word[i] + '-'
+                    i += 1
+                else:
+                    i += 1
+            elif word[i] not in my_vowels:
+                if word[i] in my_consonants:
+                    consonants += word[i] + '-'
+                    i += 1
+                else:
+                    i += 1
+        #looks ahead 2
+        elif(i+2) < len(word):
+            if word[i] not in my_vowels and word[i+1] not in my_vowels and word[i+2] not in my_vowels:
+                cons_cluster = word[i]+word[i+1]+word[i+2]
+                cons_cluster2 = word[i]+word[i+1]
+                if cons_cluster in my_consonants:
+                    consonants += cons_cluster + '-'
+                    i += 3
+                elif cons_cluster2 in my_consonants:
+                    consonants += cons_cluster2 + '-'
+                    i += 2
+                elif cons_cluster2 in my_vowels:
+                    i += 2
+                elif word[i] in my_consonants:
+                    consonants += word[i] + '-'
+                    i += 1
+                else:
+                    i += 1
+            elif word[i] not in my_vowels and word[i+1] not in my_vowels:
+                cons_cluster = word[i]+word[i+1]
+                if cons_cluster in my_consonants:
+                    consonants += cons_cluster + '-'
+                    i += 2
+                elif cons_cluster in my_vowels:
+                    i +=2
+                elif word[i] in my_consonants:
+                    consonants += word[i] + '-'
+                    i += 1
+                else:
+                    i += 1
+            elif word[i] not in my_vowels:
+                if word[i] in my_consonants:
+                    consonants += word[i] + '-'
+                    i += 1
+                else:
+                    i += 1
+        #looks ahead 1
+        elif i+1 < len(word):
+            if word[i] not in my_vowels and word[i+1] not in my_vowels:
+                cons_cluster = word[i]+word[i+1]
+                if cons_cluster in my_consonants:
+                    consonants += cons_cluster + '-'
+                    i += 2
+                elif cons_cluster in my_vowels:
+                    i += 2
+                elif word[i] in my_consonants:
+                    consonants += word[i] + '-'
+                    i += 1
+                else:
+                    i += 1
+            elif word[i] not in my_vowels:
+                if word[i] in my_consonants:
+                    consonants += word[i] + '-'
+                    i += 1
+                else:
+                    i += 1
+        # if the next letter is the end of the word...
+        elif i+1 == len(word):
+            if word[i] in my_consonants:
+                consonants += word[i] + '-'
+                i += 1
+            else:
+                i += 1
+    #if the last letter is the dash, just drop it off
+    if consonants[-1:] == '-':
+        consonants = consonants[:-1]
+    print consonants
+    return [consonants]
+     
+#tok = tokens[:13]           
+#consonant_list = []
+#for t in tok:
+#    print consonant_list
+#    consonant_list += tigrinya_root(t)
+#    
+#j = 0
+#while j < 30:
+#    consonant_list += tigrinya_root(tokens[j])
+#    print consonant_list
+#    j += 1
+
+#simply takes some list of words and returns the consonant roots of each string in the list 
+def get_all_roots(word_list):
+    consonant_list = []
+    for t in word_list:
+        consonant_list += tigrinya_root(t)
+    return consonant_list
+
+#the rest just puts stuff together to deal with it easier if needed
+all_roots = get_all_roots(t_vocab)
+
+max_root = 0
+new_roots = []
+for root in all_roots:
+    if root in new_roots:
+        max_root += 1
+        new_roots += [root]
+    else:
+        new_roots += [root]
+
+new_roots = sorted(new_roots)
+
+num = sum(new_roots.count(c) for c in my_consonants)
+
+final_roots = []
+z = 0
+while z < len(new_roots):
+    n_roots = 0
+    j = 0
+    roots= []
+    num = 0
+    new_z = z
+    while new_z+1<len(new_roots):
+        if new_roots[new_z] == new_roots[new_z+1]:
+            roots += [(new_roots[new_z],num+2)]
+            num += 1
+            new_z += 1
+        else:
+            break
+    if new_z != z:
+        z = new_z
+    else:
+        z += 1
+    final_roots += roots
+
+#this prints the roots in a tuple, with index 1 being the root, and index 2 being the number of times occuring
+#tuples that repeat multiple times are not added together. Take the highest index of the repeating tuples
+#and that is how many tomes it occurs in the dictionary
+print final_roots
+
+    
+
+
+
+
+
