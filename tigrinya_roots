@@ -997,7 +997,6 @@ def tigrinya_root(word):
     #if the last letter is the dash, just drop it off
     if consonants[-1:] == '-':
         consonants = consonants[:-1]
-    print consonants
     return [consonants]
      
 #tok = tokens[:13]           
@@ -1059,11 +1058,4 @@ while z < len(new_roots):
 #this prints the roots in a tuple, with index 1 being the root, and index 2 being the number of times occuring
 #tuples that repeat multiple times are not added together. Take the highest index of the repeating tuples
 #and that is how many tomes it occurs in the dictionary
-print final_roots
-
-    
-
-
-
-
-
+print (final_roots)
